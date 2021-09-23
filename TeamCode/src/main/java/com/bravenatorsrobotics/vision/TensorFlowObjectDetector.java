@@ -29,6 +29,19 @@ public class TensorFlowObjectDetector {
             "Marker"
     };
 
+    public enum ObjectType {
+        BALL("Ball"),
+        CUBE("Cube"),
+        DUCK("Duck"),
+        MARKER("Marker");
+
+        public final String objectLabel;
+
+        ObjectType(String objectLabel) {
+            this.objectLabel = objectLabel;
+        }
+    }
+
     private static final String VUFORIA_KEY =
             "-- VUFORIA KEY --";
 
@@ -74,27 +87,37 @@ public class TensorFlowObjectDetector {
             tfod.activate();
             tfod.setZoom(2.5, 16.0 / 9.0);
         } else {
-            throw new BravenatorRuntimeException("Could not initialize TFOD!");
-        }
-    }
+                    throw new BravenatorRuntimeException("Could not initialize TFOD!");
+                }
+            }
 
-    public void UpdateRecognitions() {
-        if(opMode.opModeIsActive() && tfod != null) {
-            recognitions = tfod.getUpdatedRecognitions();
+            public void UpdateRecognitions() {
+                if(opMode.opModeIsActive() && tfod != null) {
+                    recognitions = tfod.getUpdatedRecognitions();
 
-            if(recognitions != null && recognitions.size() > 0) {
-                for(Recognition recognition : recognitions) {
-                    opMode.telemetry.addLine(opMode.telemetry.getItemSeparator());
-                    opMode.telemetry.addLine(recognition.getLabel());
-                    opMode.telemetry.addLine(String.format(Locale.US, "left = %.3f, right = %.3f", recognition.getLeft(), recognition.getRight()));
-                    opMode.telemetry.addLine(String.format(Locale.US, "top = %.3f, bottom = %.3f", recognition.getTop(), recognition.getBottom()));
-
-                    recognition.getLeft();
+                    if(recognitions != null && recognitions.size() > 0) {
+                        for(Recognition recognition : recognitions) {
+                            opMode.telemetry.addLine(opMode.telemetry.getItemSeparator());
+                            opMode.telemetry.addLine(recognition.getLabel());
+                            opMode.telemetry.addLine(String.format(Locale.US, "left = %.3f, right = %.3f", recognition.getLeft(), recognition.getRight()));
+                            opMode.telemetry.addLine(String.format(Locale.US, "top = %.3f, bottom = %.3f", recognition.getTop(), recognition.getBottom()));
                 }
 
                 opMode.telemetry.update();
             }
 
         }
+    }
+
+    public Recognition GetRecognition(ObjectType objectType) {
+        if(recognitions == null)
+            return null;
+
+        for(Recognition recognition : recognitions) {
+            if(objectType.objectLabel.equals(recognition.getLabel()))
+                return recognition;
+        }
+
+        return null;
     }
 }
